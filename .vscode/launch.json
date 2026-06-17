@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch nodeapp/server.js",
+      "program": "${workspaceFolder}/app/server.js",
+      "cwd": "${workspaceFolder}/app",
+      "console": "integratedTerminal",
+      "env": {
+        "MONGO_URL": "mongodb://root:example@localhost:27017/userdb?authSource=admin",
+        "PORT": "3000"
+      }
+    }
+  ]
+}
