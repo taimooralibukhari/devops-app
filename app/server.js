@@ -2,10 +2,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
 const User = require('./user');
+const redis = require('./redis');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const MONGO_URL = process.env.MONGO_URL || 'mongodb://localhost:27017/userdb';
+const MONGO_URL = process.env.MONGO_URL || 'mongodb://localhost:27018s/userdb';
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -88,7 +89,11 @@ function renderEdit(user, message, isError) {
 }
 
 app.get('/', async (req, res) => {
+  const cached = await redis.get('users').catch(() => null);
+  if (cached) return res.send(renderHome(JSON.parse(cached)));
+
   const users = await User.find().sort({ createdAt: -1 });
+  await redis.set('users', JSON.stringify(users), 'EX', 30).catch(() => {});
   res.send(renderHome(users));
 });
 
@@ -96,6 +101,7 @@ app.post('/users', async (req, res) => {
   try {
     const { fullName, username, email, password } = req.body;
     await User.create({ fullName, username, email, password });
+    await redis.del('users').catch(() => {});
     res.redirect('/');
   } catch (err) {
     const users = await User.find().sort({ createdAt: -1 });
@@ -117,6 +123,7 @@ app.post('/users/:id', async (req, res) => {
       { fullName, username, email, password },
       { new: true, runValidators: true }
     );
+    await redis.del('users').catch(() => {});
     res.redirect('/');
   } catch (err) {
     const user = await User.findById(req.params.id);
@@ -126,6 +133,7 @@ app.post('/users/:id', async (req, res) => {
 
 app.post('/users/:id/delete', async (req, res) => {
   await User.findByIdAndDelete(req.params.id);
+  await redis.del('users').catch(() => {});
   res.redirect('/');
 });
 
