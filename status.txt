@@ -1,0 +1,4 @@
+made image of nodeapp
+linked with compose yml file
+remove prev images and container
+update github and auth tokens
