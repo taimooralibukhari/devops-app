@@ -39,9 +39,9 @@ services:
       - mongo-network
 
 
-  nodeapp:
-    build: ./app
-    container_name: nodeapp
+  my-app:
+    image: my-app:1.0
+    container_name: my-app
     restart: unless-stopped
     depends_on:
       - mongodb
